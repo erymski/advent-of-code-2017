@@ -5,7 +5,7 @@ namespace day18
 {
     class Program
     {
-        //private static readonly string[] test =
+        //private static readonly string[] lines =
         //{
         //    "set a 1",
         //    "add a 2",
@@ -21,18 +21,46 @@ namespace day18
 
         static void Main(string[] args)
         {
+            var dataPath = Path.Combine(Environment.CurrentDirectory, @"..\..", "input.txt");
+            var lines = File.ReadAllLines(dataPath);
+
+            var lastSound = Task1(lines);
+            Console.WriteLine(lastSound);
+
+            var sndCount = Task2(lines);
+            Console.WriteLine(sndCount);
+
+            Console.ReadLine();
+        }
+
+        private static long Task1(string[] lines)
+        {
             var engine = new Engine();
 
             // compile
-            var dataPath = Path.Combine(Environment.CurrentDirectory, @"..\..", "input.txt");
-
-            Array.ForEach(File.ReadAllLines(dataPath), line => engine.AddInstruction(line));
-            //Array.ForEach(test, line => engine.AddInstruction(line));
+            Array.ForEach(lines, line => engine.AddInstruction(line));
 
             // execute
             engine.Execute();
-            Console.WriteLine(engine.LastSound);
-            Console.ReadLine();
+
+            var lastSound = engine.LastSound;
+            return lastSound;
+        }
+
+        private static long Task2(string[] lines)
+        {
+            //lines = new[]
+            //{
+            //    "snd 1",
+            //    "snd 2",
+            //    "snd p",
+            //    "rcv a",
+            //    "rcv b",
+            //    "rcv c",
+            //    "rcv d",
+            //};
+
+            return Duet.Play(lines);
         }
     }
 }
