@@ -22,15 +22,14 @@ namespace day20
             var dataPath = Path.Combine(Environment.CurrentDirectory, @"..\..", "input.txt");
             var lines = File.ReadAllLines(dataPath);
 
-            var particles = Parse(lines);
+            Particle closest = Task1(ToParticles(lines));
+            Console.WriteLine(closest.Index);
 
-            //Particle closest = Task1(particles);
-            //Console.WriteLine(closest.Index);
-
-            Stopwatch watch = Stopwatch.StartNew();
+            Particle[] particles = ToParticles(lines);
+//            Stopwatch watch = Stopwatch.StartNew();
             int aliveCount = Task2(particles);
-            watch.Stop();
-            Console.WriteLine(aliveCount + " " + watch.ElapsedMilliseconds);
+//            watch.Stop();
+            Console.WriteLine(aliveCount/* + " " + watch.ElapsedMilliseconds*/);
 
             Console.ReadLine();
         }
@@ -39,10 +38,10 @@ namespace day20
         {
             var total = particles.Length;
             int aliveCount = total;
-            var collisions = new Dictionary<long, int>(aliveCount);
             for (int iterations = 0; iterations < 50000; iterations++)
             {
-                collisions.Clear();
+                var collisions = new Dictionary<long, int>(aliveCount); // faster to recreate it each time
+
                 for (var i = 0; i < total; i++)
                 {
                     var particle = particles[i];
@@ -51,13 +50,15 @@ namespace day20
                     particle.Step();
                     var hash = particle.Hash();
 
+                    // see if any other particle has the same hash
                     int prevIndex;
                     if (collisions.TryGetValue(hash, out prevIndex))
                     {
-                        var prevParticle = particles[prevIndex];
-                        if (prevParticle.Alive)
+                        // mark both particles as dead
+
+                        if (particles[prevIndex].Alive)
                         {
-                            prevParticle.Alive = false;
+                            particles[prevIndex].Alive = false;
                             aliveCount--;
                         }
                         particle.Alive = false;
@@ -65,6 +66,7 @@ namespace day20
                     }
                     else
                     {
+                        // store the hash
                         collisions.Add(hash, i);
                     }
                 }
@@ -92,7 +94,7 @@ namespace day20
             return particles.OrderBy(p => p.Distance).First();
         }
 
-        private static Particle[] Parse(string[] lines)
+        private static Particle[] ToParticles(string[] lines)
         {
             return lines
                     // remove all chars, except numbers. Convert to ints

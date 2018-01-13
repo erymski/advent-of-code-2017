@@ -12,9 +12,9 @@ namespace day20
         /// <summary>
         /// If particle is alive
         /// </summary>
-        public bool Alive { get; set; }
+        public bool Alive = true;
 
-        // x,y,z,vx,vy,vz,ax,ay,az
+        // in order: x,y,z,vx,vy,vz,ax,ay,az
         private readonly long[] _data;
 
         /// <summary>
@@ -26,7 +26,6 @@ namespace day20
         {
             _data = data;
             Index = index;
-            Alive = true;
         }
 
         /// <summary>
@@ -53,12 +52,17 @@ namespace day20
 
         public long Hash()
         {
-            long hash = 17;
-            for (var i = 0; i < 3; i++) // only x,y,z matter
-            {
-                hash = hash * 31 + _data[i];
-            }
-            return hash;
+            // only x,y,z matter
+
+            return _data[0] * 10001 + _data[1] * 101 + _data[2];
+
+            // previous, slower version
+            //long hash = 17;
+            //for (var i = 0; i < 3; i++)
+            //{
+            //    hash = (hash * 31) ^ _data[i];
+            //}
+            //return hash.GetHashCode();
         }
     }
 }
