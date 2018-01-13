@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -22,46 +24,54 @@ namespace day20
 
             var particles = Parse(lines);
 
-            Particle closest = Task1(particles);
-            Console.WriteLine(closest.Index);
+            //Particle closest = Task1(particles);
+            //Console.WriteLine(closest.Index);
 
+            Stopwatch watch = Stopwatch.StartNew();
             int aliveCount = Task2(particles);
-            Console.WriteLine(aliveCount);
+            watch.Stop();
+            Console.WriteLine(aliveCount + " " + watch.ElapsedMilliseconds);
 
             Console.ReadLine();
         }
 
         private static int Task2(Particle[] particles)
         {
+            var total = particles.Length;
+            int aliveCount = total;
+            var collisions = new Dictionary<long, int>(aliveCount);
             for (int iterations = 0; iterations < 50000; iterations++)
             {
-                foreach (var particle in particles)
+                collisions.Clear();
+                for (var i = 0; i < total; i++)
                 {
-                    if (particle.Alive)
+                    var particle = particles[i];
+                    if (! particle.Alive) continue;
+
+                    particle.Step();
+                    var hash = particle.Hash();
+
+                    int prevIndex;
+                    if (collisions.TryGetValue(hash, out prevIndex))
                     {
-                        particle.Step();
-                    }
-                }
-
-                var pairs = particles
-                                .Where(p => p.Alive)
-                                .GroupBy(p => p.Hash())
-                                .Select(group => new { count = group.Count(), group })
-                                .OrderByDescending(group => group.count);
-
-                foreach (var pair in pairs)
-                {
-                    if (pair.count == 1) break;
-
-                    foreach (var particle in pair.group)
-                    {
+                        var prevParticle = particles[prevIndex];
+                        if (prevParticle.Alive)
+                        {
+                            prevParticle.Alive = false;
+                            aliveCount--;
+                        }
                         particle.Alive = false;
+                        aliveCount--;
+                    }
+                    else
+                    {
+                        collisions.Add(hash, i);
                     }
                 }
             }
 
             // can be tracked in the original loop... even dynamics can be tracked
-            return particles.Count(p => p.Alive);
+            return aliveCount;
         }
 
         private static Particle Task1(Particle[] particles)
