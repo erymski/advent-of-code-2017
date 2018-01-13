@@ -4,41 +4,6 @@ using System.Linq;
 
 namespace day20
 {
-    struct Particle
-    {
-        /// <summary>
-        /// Particle name
-        /// </summary>
-        public int Index { get; }
-
-        // x,y,z,vx,vy,vz,ax,ay,az
-        private readonly long[] _data;
-
-        /// <summary>
-        /// Distance from origin.
-        /// </summary>
-        public long Distance => Math.Abs(_data[0]) + Math.Abs(_data[1]) + Math.Abs(_data[2]);
-
-        public Particle(long[] data, int index)
-        {
-            _data = data;
-            Index = index;
-        }
-
-        public void Step()
-        {
-            SubStep(0); // x
-            SubStep(1); // y
-            SubStep(2); // z
-        }
-
-        private void SubStep(int index)
-        {
-            _data[index + 3] += _data[index + 6];
-            _data[index] += _data[index + 3];
-        }
-    }
-
     class Program
     {
         private static readonly char[] Separator = " ,pva<>=".ToCharArray();
@@ -57,6 +22,50 @@ namespace day20
 
             var particles = Parse(lines);
 
+            Particle closest = Task1(particles);
+            Console.WriteLine(closest.Index);
+
+            int aliveCount = Task2(particles);
+            Console.WriteLine(aliveCount);
+
+            Console.ReadLine();
+        }
+
+        private static int Task2(Particle[] particles)
+        {
+            for (int iterations = 0; iterations < 50000; iterations++)
+            {
+                foreach (var particle in particles)
+                {
+                    if (particle.Alive)
+                    {
+                        particle.Step();
+                    }
+                }
+
+                var pairs = particles
+                                .Where(p => p.Alive)
+                                .GroupBy(p => p.Hash())
+                                .Select(group => new { count = group.Count(), group })
+                                .OrderByDescending(group => group.count);
+
+                foreach (var pair in pairs)
+                {
+                    if (pair.count == 1) break;
+
+                    foreach (var particle in pair.group)
+                    {
+                        particle.Alive = false;
+                    }
+                }
+            }
+
+            // can be tracked in the original loop... even dynamics can be tracked
+            return particles.Count(p => p.Alive);
+        }
+
+        private static Particle Task1(Particle[] particles)
+        {
             // solving in bruteforce way
             // it should be possible to solve it more cleanly by finding direction and speed of moving out of origin,
             // but don't want to open textbooks
@@ -69,10 +78,8 @@ namespace day20
                 }
             }
 
-            var closest = particles.OrderBy(p => p.Distance).First(); // can be tracked in the original loop... even dynamics can be tracked
-            Console.WriteLine(closest.Index);
-
-            Console.ReadLine();
+            // can be tracked in the original loop... even dynamics can be tracked
+            return particles.OrderBy(p => p.Distance).First();
         }
 
         private static Particle[] Parse(string[] lines)
