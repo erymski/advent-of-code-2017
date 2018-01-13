@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -26,10 +25,8 @@ namespace day20
             Console.WriteLine(closest.Index);
 
             Particle[] particles = ToParticles(lines);
-//            Stopwatch watch = Stopwatch.StartNew();
             int aliveCount = Task2(particles);
-//            watch.Stop();
-            Console.WriteLine(aliveCount/* + " " + watch.ElapsedMilliseconds*/);
+            Console.WriteLine(aliveCount);
 
             Console.ReadLine();
         }
@@ -38,8 +35,10 @@ namespace day20
         {
             var total = particles.Length;
             int aliveCount = total;
+
             for (int iterations = 0; iterations < 50000; iterations++)
             {
+                // map [particle hash -> particle index]
                 var collisions = new Dictionary<long, int>(aliveCount); // faster to recreate it each time
 
                 for (var i = 0; i < total; i++)
@@ -61,6 +60,7 @@ namespace day20
                             particles[prevIndex].Alive = false;
                             aliveCount--;
                         }
+
                         particle.Alive = false;
                         aliveCount--;
                     }

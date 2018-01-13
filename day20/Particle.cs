@@ -5,7 +5,7 @@ namespace day20
     class Particle
     {
         /// <summary>
-        /// Particle name
+        /// Particle index.
         /// </summary>
         public int Index { get; }
 
@@ -14,7 +14,11 @@ namespace day20
         /// </summary>
         public bool Alive = true;
 
-        // in order: x,y,z,vx,vy,vz,ax,ay,az
+        /// <summary>
+        /// Particle data.
+        /// 
+        /// Nine numbers in order: x,y,z,vx,vy,vz,ax,ay,az
+        /// </summary>
         private readonly long[] _data;
 
         /// <summary>
@@ -22,6 +26,11 @@ namespace day20
         /// </summary>
         public long Distance => Math.Abs(_data[0]) + Math.Abs(_data[1]) + Math.Abs(_data[2]);
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="data">Array with patricle data.</param>
+        /// <param name="index">Particle index.</param>
         public Particle(long[] data, int index)
         {
             _data = data;
@@ -38,16 +47,16 @@ namespace day20
             SubStep(2); // z
         }
 
-        private void SubStep(int index)
+        private void SubStep(int posIndex)
         {
-            // velocity is offset position by 3 (index + 3)
+            // velocity offsets position by 3 (index + 3)
             // acceleration offsets position by 6 (index + 6)
 
             // adjust velocity
-            _data[index + 3] += _data[index + 6];
+            _data[posIndex + 3] += _data[posIndex + 6];
 
             // adjust position
-            _data[index] += _data[index + 3];
+            _data[posIndex] += _data[posIndex + 3];
         }
 
         public long Hash()
