@@ -10,7 +10,7 @@ namespace day18
         [DebuggerDisplay("Program #{" + nameof(_initValue) + "}")]
         internal class HalfEngine
         {
-            private readonly long _initValue;
+            private readonly int _initValue;
 
             [DebuggerDisplay("{" + nameof(debug) + "}")]
             class Instruction
@@ -22,22 +22,22 @@ namespace day18
                 public int offset = 1; // just shift to the next instruction
             }
 
-            private readonly Dictionary<string, long> _registers = new Dictionary<string, long>();
-            private readonly Queue<long> _queue = new Queue<long>();
+            private readonly Dictionary<string, int> _registers = new Dictionary<string, int>();
+            private readonly Queue<int> _queue = new Queue<int>();
             private readonly List<Instruction> _instructions = new List<Instruction>();
             private int _pos = 0; // current position
-            private Action<long> _sendCallback;
+            private Action<int> _sendCallback;
 
             /// <summary>
             /// Indexer to access registers by name.
             /// </summary>
             /// <param name="name"></param>
             /// <returns></returns>
-            private long this[string name]
+            private int this[string name]
             {
                 get
                 {
-                    long value;
+                    int value;
                     return _registers.TryGetValue(name, out value) ? value : 0 /* each register should start with a value of 0 */;
                 }
                 set
@@ -50,18 +50,18 @@ namespace day18
             /// Constructor.
             /// </summary>
             /// <param name="initValue">Initial value for p register.</param>
-            public HalfEngine(long initValue)
+            public HalfEngine(int initValue)
             {
                 _initValue = initValue;
                 this["p"] = initValue;
             }
 
-            public void Enqueue(long value)
+            public void Enqueue(int value)
             {
                 _queue.Enqueue(value);
             }
 
-            public void Init(string[] lines, Action<long> sendCallback)
+            public void Init(string[] lines, Action<int> sendCallback)
             {
                 _sendCallback = sendCallback;
                 foreach (var line in lines)
@@ -140,10 +140,10 @@ namespace day18
             /// <summary>
             /// Get integer from the input, which can be either integer or name of register.
             /// </summary>
-            private long SafeInteger(string numOrRegister)
+            private int SafeInteger(string numOrRegister)
             {
-                long result;
-                return long.TryParse(numOrRegister, out result) ? result : this[numOrRegister];
+                int result;
+                return int.TryParse(numOrRegister, out result) ? result : this[numOrRegister];
             }
 
             /// <summary>
@@ -195,15 +195,19 @@ namespace day18
             int count = 0;
             while (true)
             {
+                if (!engine0.IsRunning) break;
+                if (!engine1.IsRunning) break;
+
                 //Console.WriteLine("-- " + count++);
-                // execute both engines (if possible)
-                int offset0 = engine0.IsRunning ? engine0.ExecuteStep() : 0;
-                int offset1 = engine1.IsRunning ? engine1.ExecuteStep() : 0;
+                int offset0 = engine0.ExecuteStep();
+                int offset1 = engine1.ExecuteStep();
 
                 // check for completion or deadlock
-                if (offset0 == 0 && offset1 == 0 && engine0.IsEmpty && engine1.IsEmpty) return engine1.SendCount;
+                if (offset0 == 0 && offset1 == 0 && engine0.IsEmpty && engine1.IsEmpty) break;
                 count++;
             }
+
+            return engine1.SendCount;
         }
     }
 }
