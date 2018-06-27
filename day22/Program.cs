@@ -17,9 +17,9 @@ namespace day22
         /// </summary>
         static readonly Dir[] _dirs =
         {
-            new Dir { dx = 0, dy = -1 }, // inverted, as the screen... for easier debugging
-            new Dir { dx = 1, dy = 0 },
             new Dir { dx = 0, dy = 1 },
+            new Dir { dx = 1, dy = 0 },
+            new Dir { dx = 0, dy = -1 },
             new Dir { dx = -1, dy = 0 },
         };
 
@@ -29,10 +29,10 @@ namespace day22
         private int _y;
         private int _rotateIndex;
         private readonly HashSet<int> _infected = new HashSet<int>();
-        private int _minX;
-        private int _minY;
-        private int _maxY;
-        private int _maxX;
+        //private int _minX;
+        //private int _minY;
+        //private int _maxY;
+        //private int _maxX;
 
         public Cluster(string[] lines)
         {
@@ -41,8 +41,8 @@ namespace day22
             _y = size / 2;
             _rotateIndex = 0; // look up
 
-            _minX = _minY = 0;
-            _maxX = _maxY = size - 1;
+            //_minX = _minY = 0;
+            //_maxX = _maxY = size - 1;
 
             for (var y = 0; y < size; y++)
             {
@@ -98,50 +98,50 @@ namespace day22
             var dir = _dirs[_rotateIndex];
             _x += dir.dx;
             _y += dir.dy;
-            UpdateBounds();
+            //UpdateBounds();
 
             return !isNodeInfected;
         }
 
-        private void UpdateBounds()
-        {
-            if (_x > _maxX)
-            {
-                _maxX = _x;
-            }
-            else if (_x < _minX)
-            {
-                _minX = _x;
-            }
+        //private void UpdateBounds()
+        //{
+        //    if (_x > _maxX)
+        //    {
+        //        _maxX = _x;
+        //    }
+        //    else if (_x < _minX)
+        //    {
+        //        _minX = _x;
+        //    }
 
-            if (_y > _maxY)
-            {
-                _maxY = _y;
-            }
-            else if (_y < _minY)
-            {
-                _minY = _y;
-            }
-        }
+        //    if (_y > _maxY)
+        //    {
+        //        _maxY = _y;
+        //    }
+        //    else if (_y < _minY)
+        //    {
+        //        _minY = _y;
+        //    }
+        //}
 
-        public void Dump()
-        {
-            for (int j = _minY; j <= _maxY; j++)
-            {
-                for (int i = _minX; i <= _maxX; i++)
-                {
-                    if ((_x == i) && (_y == j))
-                    {
-                        Console.Write('x');
-                    }
-                    else
-                    {
-                        Console.Write(_infected.Contains(Pack(i, j)) ? '#' : '.');
-                    }
-                }
-                Console.WriteLine();
-            }
-        }
+        //public void Dump()
+        //{
+        //    for (int j = _minY; j <= _maxY; j++)
+        //    {
+        //        for (int i = _minX; i <= _maxX; i++)
+        //        {
+        //            if ((_x == i) && (_y == j))
+        //            {
+        //                Console.Write('x');
+        //            }
+        //            else
+        //            {
+        //                Console.Write(_infected.Contains(Pack(i, j)) ? '#' : '.');
+        //            }
+        //        }
+        //        Console.WriteLine();
+        //    }
+        //}
     }
 
     class Program
@@ -156,10 +156,11 @@ namespace day22
         static void Main(string[] args)
         {
             var dataPath = Path.Combine(Environment.CurrentDirectory, @"..\..", "input.txt");
-            var lines = File.ReadAllLines(dataPath);
+            var lines = File.ReadAllLines(dataPath)/*_test*/;
+            Array.Reverse(lines); // inverted for easier debugging
 
             int infected = 0;
-            var cluster = new Cluster(/*_test*/lines);
+            var cluster = new Cluster(lines);
             for (int i = 0; i < 10000; i++)
             {
 //                cluster.Dump();
