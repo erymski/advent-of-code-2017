@@ -36,6 +36,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cluster.cs" />
+    <Compile Include="Cluster2.cs" />
+    <Compile Include="ClusterBase.cs" />
+    <Compile Include="Dir.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
