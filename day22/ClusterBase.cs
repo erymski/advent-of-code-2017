@@ -14,7 +14,7 @@ namespace day22
         //private int _maxX;
 
         // no need to allocate memory for the whole cluster, just keep items with values
-        protected readonly HashSet<int> _infected = new HashSet<int>();
+        protected readonly Dictionary<int, State> _infected = new Dictionary<int, State>();
 
 
         protected ClusterBase(string[] lines)
@@ -42,9 +42,9 @@ namespace day22
         }
 
 
-        private void Set(int x, int y)
+        private void Set(int x, int y, State state = State.Infected)
         {
-            _infected.Add(Pack(x, y));
+            _infected.Add(Pack(x, y), state);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace day22
         public bool Burst()
         {
             var packedPos = Pack(_x, _y);
-            var isInfected = _infected.Contains(packedPos);
+            var isInfected = _infected.TryGetValue(packedPos, out var state) && state == State.Infected;
 
             // 1. If the current node is infected, it turns to its right. Otherwise, it turns to its left.
             // 2. toggle
@@ -22,7 +22,7 @@ namespace day22
             }
             else
             {
-                _infected.Add(packedPos);
+                _infected.Add(packedPos, State.Infected);
                 Left();
             }
 

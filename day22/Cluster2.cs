@@ -9,7 +9,7 @@
         public bool Burst()
         {
             var packedPos = Pack(_x, _y);
-            var isNodeInfected = _infected.Contains(packedPos);
+            var isNodeInfected = _infected.TryGetValue(packedPos, out var state) && state == State.Infected;
 
             // 1. If the current node is infected, it turns to its right. Otherwise, it turns to its left.
             // 2. toggle
@@ -21,7 +21,7 @@
             }
             else
             {
-                _infected.Add(packedPos);
+                _infected.Add(packedPos, State.Infected);
                 _rotateIndex--;
                 if (_rotateIndex < 0)
                 {
