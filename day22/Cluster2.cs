@@ -1,53 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace day22
+﻿namespace day22
 {
-    class Cluster2
+    class Cluster2 : ClusterBase
     {
-        private int _x;
-        private int _y;
-        private int _rotateIndex;
-        private readonly HashSet<int> _infected = new HashSet<int>();
-        //private int _minX;
-        //private int _minY;
-        //private int _maxY;
-        //private int _maxX;
-
-        public Cluster2(string[] lines)
+        public Cluster2(string[] lines) : base(lines)
         {
-            int size = lines.Length;
-            _x = size / 2;
-            _y = size / 2;
-            _rotateIndex = 0; // look up
-
-            //_minX = _minY = 0;
-            //_maxX = _maxY = size - 1;
-
-            for (var y = 0; y < size; y++)
-            {
-                var line = lines[y];
-                for (var x = 0; x < size; x++)
-                {
-                    char ch = line[x];
-                    if (ch == '#')
-                    {
-                        Set(x, y);
-                    }
-                }
-            }
-        }
-
-        private void Set(int x, int y)
-        {
-            _infected.Add(Pack(x, y));
-        }
-
-        /// <summary>
-        /// Pack 2D coordinate to int
-        /// </summary>
-        private static int Pack(int x, int y) // long would be safer, but no need to input size
-        {
-            return (x << 16) + y;
         }
 
         public bool Burst()
@@ -73,35 +29,10 @@ namespace day22
                 }
             }
 
-            // move
-            var dir = Dir.For(_rotateIndex);
-            _x += dir.dx;
-            _y += dir.dy;
-            //UpdateBounds();
+            Move();
 
             return !isNodeInfected;
         }
-
-        //private void UpdateBounds()
-        //{
-        //    if (_x > _maxX)
-        //    {
-        //        _maxX = _x;
-        //    }
-        //    else if (_x < _minX)
-        //    {
-        //        _minX = _x;
-        //    }
-
-        //    if (_y > _maxY)
-        //    {
-        //        _maxY = _y;
-        //    }
-        //    else if (_y < _minY)
-        //    {
-        //        _minY = _y;
-        //    }
-        //}
 
         //public void Dump()
         //{

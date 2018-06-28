@@ -4,36 +4,8 @@ namespace day22
 {
     class Cluster : ClusterBase
     {
-        // no need to allocate memory for the whole cluster, just keep items with values
-        private readonly HashSet<int> _infected = new HashSet<int>();
-
-        public Cluster(string[] lines)
+        public Cluster(string[] lines) : base(lines)
         {
-            int size = lines.Length;
-            _x = size / 2;
-            _y = size / 2;
-            _rotateIndex = 0; // look up
-
-            //_minX = _minY = 0;
-            //_maxX = _maxY = size - 1;
-
-            for (var y = 0; y < size; y++)
-            {
-                var line = lines[y];
-                for (var x = 0; x < size; x++)
-                {
-                    char ch = line[x];
-                    if (ch == '#')
-                    {
-                        Set(x, y);
-                    }
-                }
-            }
-        }
-
-        private void Set(int x, int y)
-        {
-            _infected.Add(Pack(x, y));
         }
 
         public bool Burst()
