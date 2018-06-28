@@ -8,7 +8,7 @@ namespace day22
         {
         }
 
-        public bool Burst()
+        public override bool Burst()
         {
             var packedPos = Pack(_x, _y);
             var isInfected = _infected.TryGetValue(packedPos, out var state) && state == State.Infected;

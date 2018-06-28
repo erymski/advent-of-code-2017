@@ -5,6 +5,8 @@ namespace day22
 {
     class Program
     {
+        private const int IterationCount = 10000000;
+
         private static readonly string[] _test =
         {
             "..#",
@@ -18,18 +20,16 @@ namespace day22
             var lines = File.ReadAllLines(dataPath)/*_test*/;
             Array.Reverse(lines); // inverted for easier debugging
 
-            int infected = Part1(lines);
-            Console.WriteLine($"Infected count = {infected}");
-
+            Run(new Cluster(lines));
+            Run(new Cluster2(lines));
 
             Console.ReadLine();
         }
 
-        private static int Part1(string[] lines)
+        private static void Run(ClusterBase cluster)
         {
             int infected = 0;
-            var cluster = new Cluster(lines);
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < IterationCount; i++)
             {
 //                cluster.Dump();
 
@@ -40,8 +40,7 @@ namespace day22
 
 //                Console.WriteLine();
             }
-
-            return infected;
+            Console.WriteLine($"Infected count = {infected}");
         }
     }
 }

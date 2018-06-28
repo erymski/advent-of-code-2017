@@ -1,4 +1,6 @@
-﻿namespace day22
+﻿using System;
+
+namespace day22
 {
     class Cluster2 : ClusterBase
     {
@@ -6,51 +8,39 @@
         {
         }
 
-        public bool Burst()
+        public override bool Burst()
         {
             var packedPos = Pack(_x, _y);
-            var isNodeInfected = _infected.TryGetValue(packedPos, out var state) && state == State.Infected;
-
-            // 1. If the current node is infected, it turns to its right. Otherwise, it turns to its left.
-            // 2. toggle
-            if (isNodeInfected)
+            if (!_infected.TryGetValue(packedPos, out var state))
             {
-                _infected.Remove(packedPos);
-                _rotateIndex++;
-                _rotateIndex %= Dir.Count;
-            }
-            else
-            {
-                _infected.Add(packedPos, State.Infected);
-                _rotateIndex--;
-                if (_rotateIndex < 0)
-                {
-                    _rotateIndex = Dir.Count - 1;
-                }
+                state = State.Clean;
             }
 
+            switch (state)
+            {
+                case State.Clean:
+                    Left();
+                    break;
+                case State.Weakened:
+                    // don't change direction
+                    break;
+                case State.Infected:
+                    Right();
+                    break;
+                case State.Flagged:
+                    Reverse();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            State newState = (State) ((int)(state + 1) % 4);
+            _infected[packedPos] = newState;
+
+            // move
             Move();
 
-            return !isNodeInfected;
+            return newState == State.Infected;
         }
-
-        //public void Dump()
-        //{
-        //    for (int j = _minY; j <= _maxY; j++)
-        //    {
-        //        for (int i = _minX; i <= _maxX; i++)
-        //        {
-        //            if ((_x == i) && (_y == j))
-        //            {
-        //                Console.Write('x');
-        //            }
-        //            else
-        //            {
-        //                Console.Write(_infected.Contains(Pack(i, j)) ? '#' : '.');
-        //            }
-        //        }
-        //        Console.WriteLine();
-        //    }
-        //}
     }
 }
