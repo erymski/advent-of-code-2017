@@ -24,8 +24,8 @@ namespace day18
             var dataPath = Path.Combine(Environment.CurrentDirectory, @"..\..", "input.txt");
             var lines = File.ReadAllLines(dataPath);
 
-            var lastSound = Task1(lines);
-            Console.WriteLine(lastSound);
+            //var lastSound = Task1(lines);
+            //Console.WriteLine(lastSound);
 
             var sndCount = Task2(lines);
             Console.WriteLine(sndCount);

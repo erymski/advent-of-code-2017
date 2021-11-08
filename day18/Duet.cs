@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
+using INT = System.Decimal;
+
 namespace day18
 {
     internal class Duet
@@ -10,9 +12,7 @@ namespace day18
         [DebuggerDisplay("Program #{" + nameof(_initValue) + "}")]
         internal class HalfEngine
         {
-            private readonly int _initValue;
-
-            [DebuggerDisplay("{" + nameof(debug) + "}")]
+            [DebuggerDisplay("{" + nameof(debug) + "}:{" + nameof(executed) + "}")]
             class Instruction
             {
                 public string debug;
@@ -20,48 +20,46 @@ namespace day18
                 public Action action = () => { }; // no-op by default
 
                 public int offset = 1; // just shift to the next instruction
+                public int executed = 0;
             }
 
-            private readonly Dictionary<string, int> _registers = new Dictionary<string, int>();
-            private readonly Queue<int> _queue = new Queue<int>();
+            private readonly Dictionary<string, INT> _registers = new Dictionary<string, INT>();
+            private readonly Queue<INT> _queue = new Queue<INT>();
             private readonly List<Instruction> _instructions = new List<Instruction>();
             private int _pos = 0; // current position
-            private Action<int> _sendCallback;
+            private Action<INT> _sendCallback;
+            private readonly INT _initValue;
 
             /// <summary>
             /// Indexer to access registers by name.
             /// </summary>
             /// <param name="name"></param>
             /// <returns></returns>
-            private int this[string name]
+            private INT this[string name]
             {
                 get
                 {
-                    int value;
-                    return _registers.TryGetValue(name, out value) ? value : 0 /* each register should start with a value of 0 */;
+                    return _registers.TryGetValue(name, out var value) ? value : (INT)0 /* each register should start with a value of 0 */;
                 }
-                set
-                {
-                    _registers[name] = value;
-                }
+                set => _registers[name] = value;
             }
 
             /// <summary>
             /// Constructor.
             /// </summary>
             /// <param name="initValue">Initial value for p register.</param>
-            public HalfEngine(int initValue)
+            public HalfEngine(INT initValue)
             {
                 _initValue = initValue;
                 this["p"] = initValue;
             }
 
-            public void Enqueue(int value)
+            public void Enqueue(INT value)
             {
                 _queue.Enqueue(value);
             }
 
-            public void Init(string[] lines, Action<int> sendCallback)
+            public void Init(string[] lines, Action<INT> sendCallback)
             {
                 _sendCallback = sendCallback;
                 foreach (var line in lines)
@@ -94,19 +92,32 @@ namespace day18
                         break;
 
                     case "set": // sets register X to the value of Y
-                        instruction.action = () => this[instruction.register] = SafeInteger(parts[2]);
+                        instruction.action = () =>
+                        {
+                            this[instruction.register] = SafeInteger(parts[2]);
+                        };
                         break;
 
                     case "add": // increases register X by the value of Y
-                        instruction.action = () => this[instruction.register] += SafeInteger(parts[2]);
+                        instruction.action = () =>
+                        {
+                            INT original = this[instruction.register];
+                            this[instruction.register] = original + SafeInteger(parts[2]);
+                        };
                         break;
 
                     case "mul": // sets register X to the result of multiplying the value contained in register X by the value of Y
-                        instruction.action = () => this[instruction.register] = this[instruction.register] * SafeInteger(parts[2]);
+                        instruction.action = () =>
+                        {
+                            this[instruction.register] *= SafeInteger(parts[2]);
+                        };
                         break;
 
                     case "mod": // sets X to the result of X modulo Y
-                        instruction.action = () => this[instruction.register] %= SafeInteger(parts[2]);
+                        instruction.action = () =>
+                        {
+                            this[instruction.register] %= SafeInteger(parts[2]);
+                        };
                         break;
 
                     case "rcv": // receives the next value and stores it in register X
@@ -114,7 +125,7 @@ namespace day18
                         {
                             if (_queue.Count > 0)
                             {
-                                if (this[instruction.register] > 0)
+                                //if (this[instruction.register] > 0)
                                     this[instruction.register] = _queue.Dequeue();
                                 instruction.offset = 1;
                             }
@@ -129,10 +140,14 @@ namespace day18
                     case "jgz": // jumps with an offset of the value of Y, but only if the value of X is greater than zero.
                         instruction.action = () =>
                         {
-                            instruction.offset = (int)(this[instruction.register] > 0 ? SafeInteger(parts[2]) : 1); // can't be more than int... just cast
+                            var value = INT.TryParse(instruction.register, out var result) ? result : this[instruction.register];
+                            instruction.offset = (int)(value > 0 ? SafeInteger(parts[2]) : 1); // can't be more than int... just cast
                         };
                         break;
 
+                    default:
+                        Debug.Assert(false);
+                        break;
                 }
                 return instruction;
             }
@@ -140,10 +155,9 @@ namespace day18
             /// <summary>
             /// Get integer from the input, which can be either integer or name of register.
             /// </summary>
-            private int SafeInteger(string numOrRegister)
+            private INT SafeInteger(string numOrRegister)
             {
-                int result;
-                return int.TryParse(numOrRegister, out result) ? result : this[numOrRegister];
+                return INT.TryParse(numOrRegister, out var result) ? result : this[numOrRegister];
             }
 
             /// <summary>
@@ -156,6 +170,7 @@ namespace day18
                 //Console.WriteLine(instruction.debug);
 
                 instruction.action();
+                instruction.executed++;
                 //Console.WriteLine($"{_initValue}\t{_pos}->{_pos+instruction.offset}\t{instruction.debug}: {Regs}");
                 _pos += instruction.offset;
                 //if (_initValue == 1)
@@ -186,6 +201,50 @@ namespace day18
 
         public static int Play(string[] lines)
         {
+            HalfEngine[] engines = new[] { new HalfEngine(0), new HalfEngine(1) };
+
+            engines[0].Init(lines, data => engines[1].Enqueue(data));
+            engines[1].Init(lines, data => engines[0].Enqueue(data));
+
+            bool justSwitched = false;
+            var index = 0;
+            while (true)
+            {
+                int offset = engines[index].ExecuteStep();
+                if (offset == 0)
+                {
+                    if (justSwitched) break;
+                    justSwitched = true;
+
+                    index = (index + 1) % 2;
+                }
+                else
+                {
+                    justSwitched = false;
+                }
+
+            }
+
+            //int count = 0;
+            //while (true)
+            //{
+            //    if (!engine0.IsRunning) break;
+            //    if (!engine1.IsRunning) break;
+
+            //    //Console.WriteLine("-- " + count++);
+            //    int offset0 = engine0.ExecuteStep();
+            //    int offset1 = engine1.ExecuteStep();
+
+            //    // check for completion or deadlock
+            //    if (offset0 == 0 && offset1 == 0/* && engine0.IsEmpty && engine1.IsEmpty*/) break;
+            //    count++;
+            //}
+
+            return engines[1].SendCount;
+        }
+
+        public static int PlayOld(string[] lines)
+        {
             var engine0 = new HalfEngine(0);
             var engine1 = new HalfEngine(1);
 
@@ -203,7 +262,7 @@ namespace day18
                 int offset1 = engine1.ExecuteStep();
 
                 // check for completion or deadlock
-                if (offset0 == 0 && offset1 == 0 && engine0.IsEmpty && engine1.IsEmpty) break;
+                if (offset0 == 0 && offset1 == 0/* && engine0.IsEmpty && engine1.IsEmpty*/) break;
                 count++;
             }
 

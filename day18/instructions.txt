@@ -8,17 +8,18 @@
 05:  add i -1
 06:  jgz i -2
 // a = 1 and gets doubled 31 times
+// 2^31 == 0x80000000. In binary - 10000000000000000000000000000000 
 
-07:  add a -1
+07:  add a -1       // a = 0x7FFFFFFF or 2147483647
 08:  set i 127
-09:    set p 680
-10:    mul p 8505
-11:    mod p a
-12:    mul p 129749
-13:    add p 12345
-14:    mod p a
-15:    set b p
-16:    mod b 10000
+09:    set p 680    // p = 680 or 0x2A8
+10:    mul p 8505   // p = 5783400 or 0x583F68
+11:    mod p a      // p = 5783400   (unchanded)
+12:    mul p 129749 // p = 750390366600
+13:    add p 12345  // p = 750390378945
+14:    mod p a      // p = 918586142
+15:    set b p      // b = 918586142
+16:    mod b 10000  // b = 6142
 17:    snd b
 18:    add i -1
 19:  jgz i -9
